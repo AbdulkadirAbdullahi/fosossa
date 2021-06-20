@@ -502,31 +502,28 @@ let MyApp = class MyApp {
                 this.downloadableURL = url;
                 user.photourl = this.downloadableURL;
                 try {
-                    const result = this.afAuth.auth.createUserWithEmailAndPassword(user.email, user.phone);
-                    if (result)
-                        this.afAuth.authState.take(1).subscribe(auth => {
-                            this.userid = auth.uid;
-                            this.db2.object('photoalbum/users/' + auth.uid).set(user)
-                                .then(() => {
-                                this.afAuth.auth.signOut().then(() => {
-                                    let alert2 = this.alertCtrl.create({
-                                        title: '<font color="green"><b> </b>Upload Successful Your unique ID = <font color="black">' + this.userid + '</font></font>',
-                                        cssClass: "alert",
-                                        buttons: [
-                                            {
-                                                text: 'Ok',
-                                                role: 'cancel',
-                                                handler: data => {
-                                                    //  this.afAuth.auth.signOut().then(()=>{})
-                                                }
-                                            },
-                                        ]
-                                    });
-                                    alert2.present();
-                                    loading.dismiss();
+                    this.afAuth.auth.createUserWithEmailAndPassword(user.email, user.phone).then((auth) => {
+                        this.db2.object('photoalbum/users/' + auth.user.uid).set(user)
+                            .then(() => {
+                            this.afAuth.auth.signOut().then(() => {
+                                let alert2 = this.alertCtrl.create({
+                                    title: '<font color="green"><b> </b>Upload Successful Your unique ID = <font color="black">' + auth.user.uid + '</font></font>',
+                                    cssClass: "alert",
+                                    buttons: [
+                                        {
+                                            text: 'Ok',
+                                            role: 'cancel',
+                                            handler: data => {
+                                                //  this.afAuth.auth.signOut().then(()=>{})
+                                            }
+                                        },
+                                    ]
                                 });
+                                alert2.present();
+                                loading.dismiss();
                             });
-                        }); //end db.authstarte
+                        });
+                    }); //end db.authstarte
                     //  this.itemsRef.push({ name: user.name, email : user.email, admno: user.admno, department: user.department });
                     //  this.afAuth.auth.signInWithEmailAndPassword(user.email, user.password);
                     //   var  userg = firebase.auth().currentUser;
@@ -564,31 +561,28 @@ let MyApp = class MyApp {
                             });
                             loading.present();
                             try {
-                                const result = this.afAuth.auth.createUserWithEmailAndPassword(user.email, user.phone);
-                                if (result)
-                                    this.afAuth.authState.take(1).subscribe(auth => {
-                                        this.userid = auth.uid;
-                                        this.db2.object('photoalbum/users/' + auth.uid).set(user)
-                                            .then(() => {
-                                            this.afAuth.auth.signOut().then(() => {
-                                                let alert2 = this.alertCtrl.create({
-                                                    title: '<font color="green"><b> </b>Upload Successful Your unique ID = <font color="black">' + this.userid + '</font></font>',
-                                                    cssClass: "alert",
-                                                    buttons: [
-                                                        {
-                                                            text: 'Ok',
-                                                            role: 'cancel',
-                                                            handler: data => {
-                                                                //  this.afAuth.auth.signOut().then(()=>{})
-                                                            }
-                                                        },
-                                                    ]
-                                                });
-                                                alert2.present();
-                                                loading.dismiss();
+                                this.afAuth.auth.createUserWithEmailAndPassword(user.email, user.phone).then((auth) => {
+                                    this.db2.object('photoalbum/users/' + auth.user.uid).set(user)
+                                        .then(() => {
+                                        this.afAuth.auth.signOut().then(() => {
+                                            let alert2 = this.alertCtrl.create({
+                                                title: '<font color="green"><b> </b>Upload Successful Your unique ID = <font color="black">' + auth.user.uid + '</font></font>',
+                                                cssClass: "alert",
+                                                buttons: [
+                                                    {
+                                                        text: 'Ok',
+                                                        role: 'cancel',
+                                                        handler: data => {
+                                                            //  this.afAuth.auth.signOut().then(()=>{})
+                                                        }
+                                                    },
+                                                ]
                                             });
+                                            alert2.present();
+                                            loading.dismiss();
                                         });
                                     });
+                                });
                                 //end db.authstarte
                                 //  this.itemsRef.push({ name: user.name, email : user.email, admno: user.admno, department: user.department });
                                 //  this.afAuth.auth.signInWithEmailAndPassword(user.email, user.password);

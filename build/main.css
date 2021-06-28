@@ -26105,6 +26105,22 @@ ion-col {
   height: 35px;
 }
 
+/*
+.scroll-bar-indicator
+{
+	display: none;
+    overflow-x: hidden;
+}
+scroll-content {
+    overflow-y: hidden;
+}
+.scroll-content {overflow-y: auto;}
+-webkit-scrollbar, *::-webkit-scrollbar { display: none; }
+*/
+page-home #input {
+  size: 200px;
+}
+
 page-home #moduleCard {
   padding: 15px;
 }
@@ -26183,3 +26199,44 @@ ion-modal.inset-modal {
   transition: opacity .25s ease-in-out;
   padding: 20vh 10vw;
 }
+
+page-profiledetail .chat {
+  text-align: center;
+}
+
+page-profiledetail .social {
+  text-align: center;
+  color: #4f4d4d !important;
+  font-size: x-large;
+  border-radius: 5px;
+  border: 1px solid greenyellow;
+}
+
+page-profiledetail .label {
+  text-align: left;
+}
+
+page-profiledetail .name {
+  text-align: center;
+}
+
+page-profiledetail .cont {
+  border-radius: 5px;
+}
+
+page-profiledetail .title {
+  text-align: left;
+  color: #4f4d4d !important;
+}
+
+/*
+.scroll-bar-indicator
+{
+	display: none;
+    overflow-x: hidden;
+}
+scroll-content {
+    overflow-y: hidden;
+}
+.scroll-content {overflow-y: auto;}
+*/

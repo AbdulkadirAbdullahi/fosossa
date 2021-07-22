@@ -13387,7 +13387,10 @@ input.text-input:-webkit-autofill {
   width: calc(100% - 8px);
 }
 
-
+.input-ios .inset-input {
+  padding: 5.5px 8px;
+  margin: 5.5px 16px 5.5px 0;
+}
 
 .item-ios.item-label-stacked .text-input,
 .item-ios.item-label-floating .text-input {
@@ -13409,7 +13412,9 @@ input.text-input:-webkit-autofill {
   padding-bottom: 8px;
 }
 
-
+.input-ios[clearInput] {
+  position: relative;
+}
 
 .input-ios[clearInput] .text-input {
   padding-right: 30px;
@@ -13639,6 +13644,30 @@ input.text-input:-webkit-autofill {
   border: 0;
 }
 
+.input-wrapper {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  overflow: hidden;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  -webkit-box-orient: inherit;
+  -webkit-box-direction: inherit;
+  -webkit-flex-direction: inherit;
+  -ms-flex-direction: inherit;
+  flex-direction: inherit;
+  -webkit-box-align: inherit;
+  -webkit-align-items: inherit;
+  -ms-flex-align: inherit;
+  align-items: inherit;
+  -webkit-align-self: stretch;
+  -ms-flex-item-align: stretch;
+  align-self: stretch;
+  text-overflow: ellipsis;
+}
 
 .item[no-lines],
 .item.item[no-lines] .item-inner {
@@ -26118,6 +26147,38 @@ page-home #h {
   }
 }
 
+.alertb ::-webkit-input-placeholder {
+  /* WebKit, Blink, Edge */
+  color: #6a6666;
+}
+
+.alertb :-moz-placeholder {
+  /* Mozilla Firefox 4 to 18 */
+  color: #6a6666;
+  opacity: 1;
+}
+
+.alertb ::-moz-placeholder {
+  /* Mozilla Firefox 19+ */
+  color: #6a6666;
+  opacity: 1;
+}
+
+.alertb :-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
+  color: #6a6666;
+}
+
+.alertb ::-ms-input-placeholder {
+  /* Microsoft Edge */
+  color: #6a6666;
+}
+
+.alertb ::placeholder {
+  /* Most modern browsers support this now. */
+  color: #6a6666;
+}
+
 .card-background-page ion-card {
   position: relative;
   text-align: center;
@@ -26169,6 +26230,10 @@ ion-modal.inset-modal {
   -webkit-transition: opacity .25s ease-in-out;
   transition: opacity .25s ease-in-out;
   padding: 20vh 10vw;
+}
+
+#p {
+  color: #0e0d0d;
 }
 
 page-profiledetail .chat {

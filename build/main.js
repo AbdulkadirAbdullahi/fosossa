@@ -1,20 +1,15 @@
-webpackJsonp([3],{
+webpackJsonp([1],{
 
-/***/ 165:
+/***/ 168:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return UserProvider; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__(166);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__shared_baseurl__ = __webpack_require__(294);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__process_httpmsg_process_httpmsg__ = __webpack_require__(298);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map__ = __webpack_require__(506);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_delay__ = __webpack_require__(508);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_delay___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_delay__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch__ = __webpack_require__(511);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ProfiledetailPage; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_fire_auth__ = __webpack_require__(135);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_fire_database__ = __webpack_require__(137);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_fire_storage__ = __webpack_require__(139);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_ionic_angular__ = __webpack_require__(69);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -29,48 +24,209 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-
-
-/*
-  Generated class for the CourseProvider provider.
-
-  See https://angular.io/guide/dependency-injection for more info on providers
-  and Angular DI.
-*/
-let UserProvider = class UserProvider {
-    constructor(http, processHTTPMsgService) {
-        this.http = http;
-        this.processHTTPMsgService = processHTTPMsgService;
-        console.log('Hello CourseProvider Provider');
+let ProfiledetailPage = class ProfiledetailPage {
+    constructor(afAuth, db, alertCtrl, storage, loadingCtrl, navCtrl, navParams) {
+        this.afAuth = afAuth;
+        this.db = db;
+        this.alertCtrl = alertCtrl;
+        this.storage = storage;
+        this.loadingCtrl = loadingCtrl;
+        this.navCtrl = navCtrl;
+        this.navParams = navParams;
+        this.downloadableURL = '';
+        this.basePath = '/photoAlbum';
+        this.updateDetail = false;
+        this.user = {};
+        this.user = this.navParams.get('data2');
+        this.userData = this.user;
+        if (this.user.photourl != "")
+            this.enableimgupdate = false;
+        else
+            this.enableimgupdate = true;
     }
-    /*
-      getmodules(): Observable<Module[]> {
-        return this.http.get(baseURL + 'modules')
-                  .map(res => { return this.processHTTPMsgService.extractData(res); })
-                  .catch(error => { return this.processHTTPMsgService.handleError(error); });
-        }
-        
-        getmodule(id: number): Observable<Module> {
-        return  this.http.get(baseURL + 'module/'+ id)
-                  .map(res => { return this.processHTTPMsgService.extractData(res); })
-                  .catch(error => { return this.processHTTPMsgService.handleError(error); });
-        }
-        */
-    adduser(user) {
-        return this.http.post(__WEBPACK_IMPORTED_MODULE_2__shared_baseurl__["a" /* baseURL */] + 'user', user)
-            .catch(error => { return this.processHTTPMsgService.handleError(error); });
+    ionViewDidLoad() {
+        this.afAuth.authState.take(1).subscribe(data => {
+            if (data && data.email && data.uid) {
+                this.userId = data.uid;
+            }
+            else
+                alert("you are not authenticated");
+        }); //authstatesddd
     }
+    removeFile() {
+        this.img1 = "";
+        this.selectedFile = "";
+        /*
+      \
+        }
+      
+      */
+    }
+    toggleUpdateDetails() {
+        this.updateDetail = !this.updateDetail;
+    }
+    chooseFile(event) {
+        if (event.target.files[0].size < 303110) {
+            if (event.target.files && event.target.files[0]) {
+                this.selectedFile = event.target.files[0];
+                let reader = new FileReader();
+                reader.onload = (event) => {
+                    this.img1 = event.target.result;
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+        else {
+            let alert = this.alertCtrl.create({
+                title: '<font color="green"><b> </b> The image should be less then 301KB </font>',
+                cssClass: "alert",
+                buttons: [
+                    {
+                        text: 'Ok',
+                        role: 'cancel',
+                        handler: data => {
+                            this.selectedFile = "";
+                        }
+                    },
+                ]
+            });
+            alert.present();
+            this.selectedFile = "";
+        } //end of else state,
+    }
+    updatephoto(photourl) {
+        var loading = this.loadingCtrl.create({
+            spinner: 'bubbles',
+            dismissOnPageChange: true,
+            content: 'removing image in progress <br> Please Wait...'
+        });
+        loading.present();
+        this.storage.storage.refFromURL(photourl).delete().then(async () => {
+            this.user.photourl = "";
+            this.db.object('photoalbum/users/' + this.userId).update(this.user)
+                .then(() => {
+                loading.dismiss();
+                this.enableimgupdate = true;
+                let alert = this.alertCtrl.create({
+                    title: '<font color="green"><b> </b>Profile Image Removed</font>',
+                    cssClass: "alert",
+                    buttons: [
+                        {
+                            text: 'Ok',
+                            role: 'cancel',
+                            handler: data => {
+                            }
+                        },
+                    ]
+                });
+                alert.present();
+            }); //end od update
+        }); //end of delete
+    }
+    error() {
+        let alert = this.alertCtrl.create({
+            title: '<font color="green"><b> </b> Full Name, State, Email, LGA, PhoneNo & Address are not optional</font>',
+            cssClass: "alert",
+            buttons: [
+                {
+                    text: 'Ok',
+                    role: 'cancel',
+                    handler: data => {
+                    }
+                },
+            ]
+        });
+        alert.present();
+    } //end of error
+    async update(user) {
+        var loading = this.loadingCtrl.create({
+            spinner: 'bubbles',
+            dismissOnPageChange: true,
+            content: 'Data updating in progress <br> Please Wait...'
+        });
+        loading.present();
+        if (this.selectedFile) {
+            const filePath = `${this.basePath}/${user.name.trim() + user.lga}`;
+            this.filepath2 = filePath; // inorder to get the path to delete file
+            this.task = this.storage.upload(filePath, this.selectedFile);
+            this.progressValue = this.task.percentageChanges(); // <<<<< Percentage of uploading is
+            (await this.task).ref.getDownloadURL().then(url => {
+                this.downloadableURL = url;
+                user.photourl = this.downloadableURL;
+                try {
+                    this.db.object('photoalbum/users/' + this.userId).update(user)
+                        .then(() => {
+                        let alert2 = this.alertCtrl.create({
+                            title: '<font color="green"><b> </b>Profile update Successful </font>',
+                            cssClass: "alert",
+                            buttons: [
+                                {
+                                    text: 'Ok',
+                                    role: 'cancel',
+                                    handler: data => {
+                                    }
+                                },
+                            ]
+                        });
+                        alert2.present();
+                        loading.dismiss();
+                    });
+                }
+                catch (error) {
+                    this.emailError = error.message;
+                    alert(error.message);
+                    console.error(error);
+                }
+            }); ///end of await  
+        }
+        else {
+            var loading = this.loadingCtrl.create({
+                spinner: 'bubbles',
+                dismissOnPageChange: true,
+                content: 'Data updating in progress <br> Please Wait...'
+            });
+            loading.present();
+            try {
+                //user.photourl = "";
+                this.db.object('photoalbum/users/' + this.userId).update(user)
+                    .then(() => {
+                    let alert2 = this.alertCtrl.create({
+                        title: '<font color="green"><b> </b>Profile update Successful </font>',
+                        cssClass: "alert",
+                        buttons: [
+                            {
+                                text: 'Ok',
+                                role: 'cancel',
+                                handler: data => {
+                                    //  this.afAuth.auth.signOut().then(()=>{})
+                                }
+                            },
+                        ]
+                    });
+                    alert2.present();
+                    loading.dismiss();
+                });
+            }
+            catch (error) {
+                this.emailError = error.message;
+                alert(error.message);
+                console.error(error);
+            }
+        } //end of if file selected methodd
+    } //end of update
 };
-UserProvider = __decorate([
-    Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["A" /* Injectable */])(),
-    __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */], __WEBPACK_IMPORTED_MODULE_3__process_httpmsg_process_httpmsg__["a" /* ProcessHttpmsgProvider */]])
-], UserProvider);
+ProfiledetailPage = __decorate([
+    Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
+        selector: 'page-profiledetail',template:/*ion-inline-start:"C:\Users\Abdulqadir\Desktop\Ionic_Mobile_App_Builder_v18.12.10\ionic2\PHOTO_ALBUM - Copy\src\pages\profiledetail\profiledetail.html"*/'<!--\n  Generated temte for the Profiledet\n\n-->\n<ion-header>\n  <ion-navbar>\n    <p class="title">Member CMP Class Of 2021 @UDUS</p>\n\n  </ion-navbar>\n \n  \n</ion-header>\n\n<ion-content>\n\n  <ion-card *ngIf="user && !updateDetail" class="cont">\n    <img src="{{user.photourl}}" onContextMenu="return false;">\n    <ion-card-content>\n      <ion-grid>\n        <ion-row class="chat">\n          <ion-col col-4 class="social" *ngIf="user.whatsapp">\n            <a href=\'https://wa.me/+234{{user.whatsapp}}\'><ion-icon ios="logo-whatsapp" md="logo-whatsapp"></ion-icon></a>       \n           </ion-col>\n          <ion-col col-4 class="social" *ngIf="user.facebook">\n           <a href="https://facebook.com/{{user.facebook}}"><ion-icon ios="logo-facebook" md="logo-facebook"></ion-icon></a>\n          </ion-col>\n          <ion-col col-4 class="social" *ngIf="user.instagram">\n           <a href="https://Instagram.com/{{user.instagram}}"><ion-icon ios="logo-instagram" md="logo-instagram"></ion-icon></a>\n          </ion-col>\n        </ion-row>\n      </ion-grid>\n\n\n      <ion-grid>\n        <ion-row>\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Name: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.name}}</p>\n          </ion-col>\n        </ion-row>\n        \n        <ion-row *ngIf="user.nickname">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Nickname: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.nickname}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.state">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">State: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.state}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.lga">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">LGA: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.lga}}</p>\n          </ion-col>\n        </ion-row>\n      \n\n        <ion-row *ngIf="user.address">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Address: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.address}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.ambition">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Ambition: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.ambition}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.favoriteqoute">\n\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Favorite Quote: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.favoriteqoute}}</p>\n          </ion-col>\n        </ion-row>\n\n\n        <ion-row *ngIf="user.bestfriend">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Best Friends:</font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.bestfriend}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.bestcourse">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Best Courses:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.bestcourse}}</p>\n        </ion-col>\n      </ion-row>\n      <ion-row *ngIf="user.worsecourse">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Worse Courses:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.worsecourse}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.favoritelecturer">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Favorite Lecturer:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.favoritelecturer}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.favoritefood">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Favorite Food:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.favoritefood}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.hobbies">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Hobbies:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.hobbies}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.email">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Email:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.email}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.instagram">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Instagram Handle:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.instagram}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.facebook">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Facebook:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.facebook}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.whatsapp">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Whatsapp No:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.whatsapp}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.phoneno">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Phone:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.phoneno}}</p>\n        </ion-col>\n      </ion-row>\n\n\n\n\n\n      </ion-grid>\n\n        \n     \n     \n      \n    </ion-card-content>\n  </ion-card>\n  <button *ngIf="!updateDetail" ion-button icon-only (click)="toggleUpdateDetails()">\n    <ion-icon ios="ios-add-circle" md="md-add-circle" >Update profile</ion-icon>\n  </button>\n  <button *ngIf="updateDetail" ion-button icon-only (click)="toggleUpdateDetails()">\n    <ion-icon ios="ios-add-circle" md="md-add-circle" >Back to profile</ion-icon>\n  </button>\n\n<div class="update_cont" *ngIf="updateDetail"> \n\n\n<br>\n\n<ion-card *ngIf="user.photourl">\n  <img src="{{user.photourl}}" onContextMenu="return false;">\n  <ion-card-content>\n  </ion-card-content>\n  <button  class="button" ion-button  (click)="updatephoto(user.photourl)">Change Image</button>\n</ion-card>\n\n      <form  id="login-form"  color="primary" method="post">\n<!-- Phto -->\n        <ion-item class="input" *ngIf="enableimgupdate">\n    \n          <label  for="input" color="primary" style="font-size: 15pt; padding: 5px; color: blacks; text-transform: capitalize;">\n            <span id="p" ion-button outline round> Photo: </span>\n         </label>\n         <input id="input" type="file" accept="image/*" (change)="chooseFile($event)">   \n       \n          \n    </ion-item>\n       <div id="coverImage" *ngIf="img1">\n   <ion-card id="coverImage">\n\n    <p>image preview</p>\n     \n      <img *ngIf="img1" [src]="img1"  onerror="this.onerror=null;this.src=\'assets/noimage.jpg\';"  width="350px" height="400px"/>\n      <button  class="button" ion-button  (click)="removeFile()">Drop image</button>\n\n   \n  \n  \n <!-- Progress Bar\n\n\n\n-->\n\n<div *ngIf="progressValue | async as val">\n<progress type="warning"  [value]="val" style="height: 7mm; width: 50%" max="100" ></progress>\n<br />\n  <span *ngIf="val<100" style="color:rgb(255, 60, 0); font-size: 17px; font-weight: 410;">{{ val | number}}% </span><span *ngIf="val == 100" style="color:rgb(1, 153, 34);  font-size: 17px; font-weight: 410;">Completed !</span>\n</div>\n\n<!-- End -->\n  </ion-card>\n</div>\n\n<ion-grid class="ion-text-center">\n         <ion-row >\n                          <ion-col *ngIf = "user.name" col-lg-1 class="header-row">\n                            <ion-label >Full name</ion-label>\n                          </ion-col>\n                          <ion-col col-lg-11 *ngIf = "user.name">\n                            <ion-label >{{user.name}}</ion-label>\n                          </ion-col>\n         </ion-row>\n         <ion-row >\n                          <ion-col  *ngIf = "user.nickname" col-lg-1 class="header-row">\n                            <ion-label >Nick Name</ion-label>\n                          </ion-col>\n                          <ion-col col-lg-11 *ngIf = "user.nickname">\n                            <ion-label >{{user.nickname}}</ion-label>\n                          </ion-col>\n        </ion-row>\n              <ion-row >\n                <ion-col  *ngIf = "user.instagram" col-lg-1 class="header-row">\n                  <ion-label >Instagram Handle</ion-label>\n                </ion-col>\n                <ion-col col-lg-11 *ngIf = "user.instagram">\n                  <ion-label >{{user.instagram}}</ion-label>\n                </ion-col>\n              </ion-row>\n\n                  <ion-row >\n                    <ion-col  *ngIf = "user.facebook" col-lg-1 class="header-row">\n                      <ion-label >Facebook</ion-label>\n                    </ion-col>\n                    <ion-col col-lg-11 *ngIf = "user.facebook">\n                      <ion-label >{{user.facebook}}</ion-label>\n                    </ion-col>\n                  </ion-row>\n\n                  <ion-row >\n                    <ion-col  *ngIf = "user.whatsapp" col-lg-1 class="header-row">\n                      <ion-label >Whatsapp</ion-label>\n                    </ion-col>\n                    <ion-col col-lg-11 *ngIf = "user.whatsapp">\n                      <ion-label >{{user.whatsapp}}</ion-label>\n                    </ion-col>\n                  </ion-row>\n            <ion-row >\n\n                      <ion-col  *ngIf = "user.email" col-lg-1 class="header-row">\n                        <ion-label >Email</ion-label>\n                      </ion-col>\n                      <ion-col col-lg-11 *ngIf = "user.email">\n                        <ion-label >{{user.email}}</ion-label>\n                      </ion-col>\n        </ion-row>\n\n        <ion-row >\n                            <ion-col  *ngIf = "user.phone" col-lg-1 class="header-row">\n                              <ion-label >Phone No</ion-label>\n                            </ion-col>\n                            <ion-col col-lg-11 *ngIf = "user.phone">\n                              <ion-label >{{user.phone}}</ion-label>\n                             </ion-col>\n       </ion-row>\n       <ion-row >\n        <ion-col  *ngIf = "user.state" col-lg-1 class="header-row">\n                  <ion-label >State</ion-label>\n                </ion-col>\n                <ion-col col-lg-11 *ngIf = "user.state">\n                  <ion-label >{{user.state}}</ion-label>\n                </ion-col>\n      </ion-row>\n      <ion-row >\n                <ion-col  *ngIf = "user.lga" col-lg-1 class="header-row">\n                  <ion-label >LGA</ion-label>\n                </ion-col>\n                <ion-col col-lg-11 *ngIf = "user.lga">\n                  <ion-label >{{user.lga}}</ion-label>\n                </ion-col>\n      </ion-row>\n      <ion-row >\n                <ion-col  *ngIf = "user.address" col-lg-1 class="header-row">\n                  <ion-label >Address</ion-label>\n                </ion-col>\n                <ion-col col-lg-11 *ngIf = "user.address">\n                  <ion-label >{{user.address}}</ion-label>\n                </ion-col>\n     </ion-row>\n     <ion-row >\n            <ion-col  *ngIf = "user.ambition" col-lg-1 class="header-row">\n              <ion-label >Ambition</ion-label>\n            </ion-col>\n            <ion-col col-lg-11 *ngIf = "user.ambition">\n              <ion-label >{{user.ambition}}</ion-label>\n            </ion-col>\n    </ion-row>\n    <ion-row >\n          <ion-col  *ngIf = "user.bestcourse" col-lg-1 class="header-row">\n            <ion-label >Best Courses</ion-label>\n          </ion-col>\n          <ion-col col-lg-11 *ngIf = "user.bestcourse">\n            <ion-label >{{user.bestcourse}}</ion-label>\n          </ion-col>\n    </ion-row>\n    <ion-row >\n      <ion-col  *ngIf = "user.worsecourse" col-lg-1 class="header-row">\n        <ion-label >Worse Course</ion-label>\n      </ion-col>\n      <ion-col col-lg-11 *ngIf = "user.worsecourse">\n        <ion-label >{{user.worsecourse}}</ion-label>\n      </ion-col>\n    </ion-row>\n    <ion-row >\n      <ion-col  *ngIf = "user.hobbies" col-lg-1 class="header-row">\n        <ion-label >Worse Course</ion-label>\n      </ion-col>\n      <ion-col col-lg-11 *ngIf = "user.hobbies">\n        <ion-label >{{user.hobbies}}</ion-label>\n      </ion-col>\n    </ion-row>\n    <ion-row >\n      <ion-col  *ngIf = "user.bestfriend" col-lg-1 class="header-row">\n        <ion-label >Best Friends</ion-label>\n      </ion-col>\n      <ion-col col-lg-11 *ngIf = "user.bestfriend">\n        <ion-label >{{user.bestfriend}}</ion-label>\n      </ion-col>\n    </ion-row>\n    <ion-row >\n      <ion-col  *ngIf = "user.favoritelecturer" col-lg-1 class="header-row">\n        <ion-label >Favorite Lecturer</ion-label>\n      </ion-col>\n      <ion-col col-lg-11 *ngIf = "user.favoritelecturer">\n        <ion-label >{{user.favoritelecturer}}</ion-label>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n    <ion-col  *ngIf = "user.favoritefood" col-lg-1 class="header-row">\n      <ion-label >Favorite Food</ion-label>\n    </ion-col>\n    <ion-col col-lg-11 *ngIf = "user.favoritefood">\n      <ion-label >{{user.favoritefood}}</ion-label>\n    </ion-col>\n  </ion-row>\n  <ion-row>\n    <ion-col  *ngIf = "user.favoriteqoute" col-lg-1 class="header-row">\n      <ion-label >Favorite qoute</ion-label>\n    </ion-col>\n    <ion-col col-lg-11 *ngIf = "user.favoriteqoute">\n      <ion-label >{{user.favoriteqoute}}</ion-label>\n    </ion-col>\n  </ion-row>\n\n\n\n\n\n\n\n</ion-grid>\n\n<ion-item class="input"> \n  <ion-label floating id="inputlabel">Full Name :</ion-label>     \n  <ion-input type="text" [(ngModel)]="user.name" name="name" required minlength="4" #name="ngModel" pattern="[A-Za-z ]+"> </ion-input>\n</ion-item>\n<div  *ngIf="name.invalid && (name.dirty || name.touched)" class="alert alert-danger">\n     <div *ngIf="name.errors.required" class="error">\n      Name is required.\n     </div>\n      \n       <div *ngIf="name.errors?.pattern" class="error">\n          Name should contain only alphabets\n       </div>\n     \n      <div *ngIf="name.errors.minlength" class="error">\n      Name must be at least 4 characters long.\n      </div>\n  </div>\n\n  <ion-item class="input"> \n    <ion-label floating id="inputlabel">Nick Name :</ion-label>     \n    <ion-input type="text" [(ngModel)]="user.nickname" name="nickname"  minlength="1" #nickname="ngModel" pattern="[A-Za-z 0-9.]+"> </ion-input>\n  </ion-item>\n  <div  *ngIf="nickname.invalid && (nickname.dirty || nickname.touched)" class="alert alert-danger">\n         <div *ngIf="nickname.errors?.pattern" class="error">\n            invalid characters\n         </div>\n       \n        <div *ngIf="nickname.errors?.minlength" class="error">\n        Name must be at least 1 characters long.\n        </div>\n  </div>\n  <ion-item class="input"> \n    <ion-label floating id="inputlabel">Instagram Handle :</ion-label>     \n    <ion-input type="text" [(ngModel)]="user.instagram"  name="instagram" minlength="4"  #instagram="ngModel" pattern="^[a-zA-Z0-9_.]+(,[a-zA-Z0-9_.]+)*$"> </ion-input>\n  </ion-item>\n  <div  *ngIf="instagram.invalid && (instagram.dirty || instagram.touched)" class="alert alert-danger">\n        <div *ngIf="instagram.errors?.pattern" class="error">\n          This is not  valid instagram  username\n      </div>\n        <div *ngIf="instagram.errors.minlength" class="error">\n        instagram must be at least 4 characters long.\n        </div>\n </div>\n\n <ion-item class="input"> \n  <ion-label floating id="inputlabel">Facebook Username :</ion-label>     \n  <ion-input type="text" [(ngModel)]="user.facebook"  name="facebook" minlength="4"  #facebook="ngModel"  pattern="^[a-zA-Z0-9_.]+(,[a-zA-Z0-9_.]+)*$"> </ion-input>\n</ion-item>\n<div  *ngIf="facebook.invalid && (facebook.dirty || facebook.touched)" class="alert alert-danger">\n      <div *ngIf="facebook.errors?.pattern" class="error">\n        This is not  valid facebook username\n    </div>\n      <div *ngIf="facebook.errors.minlength" class="error">\n        Facebook username will have to be at least four characters in length\n      </div>\n</div>\n\n<ion-item  class="inpt">\n          <ion-label floating id="inputlabel">Whatsapp No :</ion-label>\n          <ion-input type="tel" [(ngModel)]="user.whatsapp"  name="whatsapp"  minlength="11" #whatsapp="ngModel" pattern="^[0-9]*$"> </ion-input>\n        </ion-item>\n        <div  *ngIf="whatsapp.invalid && (whatsapp.dirty || whatsapp.touched)" class="alert alert-danger">\n          <div *ngIf="whatsapp.errors.pattern" class="error">Whatsapp should contain only Numbers and +</div>\n          \n            <div *ngIf="whatsapp.errors?.minlength" class="error">\n              Whatsapp must be at least 11 characters long.\n            </div>\n        </div>\n\n\n\n<ion-item  class="inpt">\n  <ion-label floating id="inputlabel">Phone No :</ion-label>\n  <ion-input type="tel" [(ngModel)]="user.phone"  name="phone"  minlength="11" #phone="ngModel" required pattern="^[0-9+]*$"> </ion-input>\n</ion-item>\n<div  *ngIf="phone.invalid && (phone.dirty || phone.touched)" class="alert alert-danger">\n  <div *ngIf="phone.errors.pattern" class="error">PhoneNo Number should contain only Numbers and +</div>\n</div>\n<div  *ngIf="phone.invalid && (phone.dirty || phone.touched)" class="alert alert-danger">\n  <div *ngIf="phone.errors?.required" class="error">\n    phone is required.\n    </div>\n    <div *ngIf="phone.errors?.minlength" class="error">\n      phone must be at least 11 characters long.\n    </div>\n</div>\n\n\n\n<ion-item class="input"> \n  <ion-label floating id="inputlabel">State :</ion-label>     \n  <ion-input type="text" [(ngModel)]="user.state"  name="state" required minlength="2"  #state="ngModel"  pattern="[A-Za-z]+"> </ion-input>\n</ion-item>\n<div  *ngIf="state.invalid && (state.dirty || state.touched)" class="alert alert-danger">\n      <div *ngIf="state.errors?.pattern" class="error">\n        State should contain only alphabets\n    </div>\n    <div *ngIf="state.errors.required" class="error">\n     State is required.\n      </div>\n      <div *ngIf="state.errors.minlength" class="error">\n      State must be at least 2 characters long.\n      </div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">LGA :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.lga"  name="lga" required minlength="2"  #lga="ngModel"  pattern="[A-Za-z ]+"> </ion-input>\n</ion-item>\n<div  *ngIf="lga.invalid && (lga.dirty || lga.touched)" class="alert alert-danger">\n    <div *ngIf="lga.errors?.pattern" class="error">\n    LGA should contain only alphabets\n  </div>\n  <div *ngIf="lga.errors.required" class="error">\n    LGA is required.\n    </div>\n    <div *ngIf="lga.errors.minlength" class="error">\n    LGA must be at least 2 characters long.\n    </div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Address :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.address"  name="address" required minlength="2"  #address="ngModel"> </ion-input>\n</ion-item>\n<div  *ngIf="address.invalid && (address.dirty || address.touched)" class="alert alert-danger">\n<div *ngIf="address.errors.required" class="error">\n  Address is required.\n  </div>\n  <div *ngIf="address.errors.minlength" class="error">\n  Address must be at least 2 characters long.\n  </div>\n</div>\n\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Ambition :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.ambition"  name="ambition"  minlength="2"  #ambition="ngModel"  pattern="[A-Za-z ]+"> </ion-input>\n</ion-item>\n<div  *ngIf="ambition.invalid && (ambition.dirty || ambition.touched)" class="alert alert-danger">\n<div *ngIf="ambition.errors?.pattern" class="error">\n  Ambition should contain only alphabets\n</div>\n\n<div *ngIf="ambition.errors.minlength" class="error">\nAmbition must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Best Courses :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.bestcourse"  name="bestcourse"  minlength="2"  #bestcourse="ngModel" pattern="^[a-zA-Z0-9, _ &]+(,[a-zA-Z0-9_, &]+)*$"> </ion-input>\n</ion-item>\n<div  *ngIf="bestcourse.invalid && (bestcourse.dirty || bestcourse.touched)" class="alert alert-danger">\n\n<div *ngIf="bestcourse.errors?.pattern" class="error">\nInvalid characters\n</div>\n<div *ngIf="bestcourse.errors.minlength" class="error">\nBest Course must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Worse Courses :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.worsecourse"  name="worsecourse"  minlength="2"  #worsecourse="ngModel" pattern="^[a-zA-Z0-9, _&]+(,[a-zA-Z0-9_, &]+)*$"> </ion-input>\n</ion-item>\n<div  *ngIf="worsecourse.invalid && (worsecourse.dirty || worsecourse.touched)" class="alert alert-danger">\n<div *ngIf="worsecourse.errors?.pattern" class="error">\nInvalid characters\n</div>\n<div *ngIf="worsecourse.errors.minlength" class="error">\nWorse Course must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Best Friends :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.bestfriend"  name="bestfriend"  minlength="2"  #bestfriend="ngModel"  pattern="[A-Za-z ,&]+"> </ion-input>\n</ion-item>\n<div  *ngIf="bestfriend.invalid && (bestfriend.dirty || bestfriend.touched)" class="alert alert-danger">\n\n<div *ngIf="bestfriend.errors?.pattern" class="error">\ninvalid characters\n</div>\n<div *ngIf="bestfriend.errors.minlength" class="error">\nBest Friends must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Favorite Lecturer :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.favoritelecturer"  name="favoritelecturer"  minlength="2"  #favoritelecturer="ngModel"  pattern="[A-Za-z .]+"> </ion-input>\n</ion-item>\n<div  *ngIf="favoritelecturer.invalid && (favoritelecturer.dirty || favoritelecturer.touched)" class="alert alert-danger">\n<div *ngIf="favoritelecturer.errors?.pattern" class="error">\nFavorite Lecturer should contain only alphabets\n</div>\n<div *ngIf="favoritelecturer.errors.minlength" class="error">\nFavorite Lecturer must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Favorite Food :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.favoritefood"  name="favoritefood"  minlength="2"  #favoritefood="ngModel"  pattern="[A-Za-z ]+"> </ion-input>\n</ion-item>\n<div  *ngIf="favoritefood.invalid && (favoritefood.dirty || favoritefood.touched)" class="alert alert-danger">\n<div *ngIf="favoritefood.errors?.pattern" class="error">\nFavorite Food should contain only alphabets\n</div>\n<div *ngIf="favoritefood.errors.minlength" class="error">\nFavorite Food must be at least 2 characters long.\n</div>\n</div>\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Favorite Quote :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.favoriteqoute"  name="favoriteqoute"  minlength="2"  #favoriteqoute="ngModel"  pattern="[A-Za-z 0-9 , ; \'\' ?.]+"> </ion-input>\n</ion-item>\n<div  *ngIf="favoriteqoute.invalid && (favoriteqoute.dirty || favoriteqoute.touched)" class="alert alert-danger">\n<div *ngIf="favoriteqoute.errors?.pattern" class="error">\ninvalid characters\n</div>\n<div *ngIf="favoriteqoute.errors.minlength" class="error">\nFavorite Quote must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n  <ion-label floating id="inputlabel">Hobbies :</ion-label>     \n  <ion-input type="text" [(ngModel)]="user.hobbies"  name="hobbies"  minlength="2"  #worsecourse="ngModel" pattern="^[a-zA-Z0-9, _&]+(,[a-zA-Z0-9_, &]+)*$"> </ion-input>\n  </ion-item>\n  <div  *ngIf="worsecourse.hobbies && (hobbies.dirty || hobbies.touched)" class="alert alert-danger">\n  <div *ngIf="hobbies.errors?.pattern" class="error">\n  Invalid characters\n  </div>\n  <div *ngIf="hobbies.errors.minlength" class="error">\n  Hobbies must be at least 2 characters long.\n  </div>\n  </div>\n\n\n\n\n  \n     <div id="login-buttons">\n  \n      <button round  id="login-button" color="primary" ion-button *ngIf="name.invalid || state.invalid || lga.invalid || address.invalid || phone.invalid" id="invalid"  (click)="error()" end>Update</button>\n      <button round  id="login-button"  color="primary" ion-button *ngIf="name.valid && state.valid && lga.valid && address.valid && phone.valid" (click)="update(user)">Update</button>\n   \n    </div>\n  \n     \n    </form>\n  \n\n\n</div>\n\n\n</ion-content>\n'/*ion-inline-end:"C:\Users\Abdulqadir\Desktop\Ionic_Mobile_App_Builder_v18.12.10\ionic2\PHOTO_ALBUM - Copy\src\pages\profiledetail\profiledetail.html"*/,
+    }),
+    __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_fire_auth__["a" /* AngularFireAuth */], __WEBPACK_IMPORTED_MODULE_2__angular_fire_database__["a" /* AngularFireDatabase */], __WEBPACK_IMPORTED_MODULE_4_ionic_angular__["a" /* AlertController */], __WEBPACK_IMPORTED_MODULE_3__angular_fire_storage__["a" /* AngularFireStorage */], __WEBPACK_IMPORTED_MODULE_4_ionic_angular__["f" /* LoadingController */], __WEBPACK_IMPORTED_MODULE_4_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_4_ionic_angular__["i" /* NavParams */]])
+], ProfiledetailPage);
 
-//# sourceMappingURL=user.js.map
+//# sourceMappingURL=profiledetail.js.map
 
 /***/ }),
 
-/***/ 199:
+/***/ 197:
 /***/ (function(module, exports) {
 
 function webpackEmptyAsyncContext(req) {
@@ -83,17 +239,17 @@ function webpackEmptyAsyncContext(req) {
 webpackEmptyAsyncContext.keys = function() { return []; };
 webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
 module.exports = webpackEmptyAsyncContext;
-webpackEmptyAsyncContext.id = 199;
+webpackEmptyAsyncContext.id = 197;
 
 /***/ }),
 
-/***/ 241:
+/***/ 239:
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
 	"../pages/profiledetail/profiledetail.module": [
-		526,
-		5
+		522,
+		0
 	]
 };
 function webpackAsyncContext(req) {
@@ -107,12 +263,12 @@ function webpackAsyncContext(req) {
 webpackAsyncContext.keys = function webpackAsyncContextKeys() {
 	return Object.keys(map);
 };
-webpackAsyncContext.id = 241;
+webpackAsyncContext.id = 239;
 module.exports = webpackAsyncContext;
 
 /***/ }),
 
-/***/ 294:
+/***/ 292:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -124,22 +280,22 @@ const baseURL = 'http://192.168.43.73:3000/';
 
 /***/ }),
 
-/***/ 297:
+/***/ 295:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HomePage; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(162);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(164);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_ionic_angular_components_loading_loading_controller__ = __webpack_require__(63);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__providers_user_user__ = __webpack_require__(165);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__angular_fire_storage__ = __webpack_require__(91);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__angular_fire_firestore__ = __webpack_require__(167);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__angular_fire_database__ = __webpack_require__(90);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__angular_fire_auth__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__profiledetail_profiledetail__ = __webpack_require__(97);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(161);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(163);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_ionic_angular_components_loading_loading_controller__ = __webpack_require__(131);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__providers_user_user__ = __webpack_require__(296);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__angular_fire_storage__ = __webpack_require__(139);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__angular_fire_firestore__ = __webpack_require__(298);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__angular_fire_database__ = __webpack_require__(137);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__angular_fire_auth__ = __webpack_require__(135);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__profiledetail_profiledetail__ = __webpack_require__(168);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -455,16 +611,86 @@ HomePage = __decorate([
 
 /***/ }),
 
-/***/ 298:
+/***/ 296:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return UserProvider; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__(164);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__shared_baseurl__ = __webpack_require__(292);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__process_httpmsg_process_httpmsg__ = __webpack_require__(297);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map__ = __webpack_require__(504);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_add_operator_map__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_delay__ = __webpack_require__(506);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_delay___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_delay__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch__ = __webpack_require__(509);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_add_operator_catch__);
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+
+
+
+/*
+  Generated class for the CourseProvider provider.
+
+  See https://angular.io/guide/dependency-injection for more info on providers
+  and Angular DI.
+*/
+let UserProvider = class UserProvider {
+    constructor(http, processHTTPMsgService) {
+        this.http = http;
+        this.processHTTPMsgService = processHTTPMsgService;
+        console.log('Hello CourseProvider Provider');
+    }
+    /*
+      getmodules(): Observable<Module[]> {
+        return this.http.get(baseURL + 'modules')
+                  .map(res => { return this.processHTTPMsgService.extractData(res); })
+                  .catch(error => { return this.processHTTPMsgService.handleError(error); });
+        }
+        
+        getmodule(id: number): Observable<Module> {
+        return  this.http.get(baseURL + 'module/'+ id)
+                  .map(res => { return this.processHTTPMsgService.extractData(res); })
+                  .catch(error => { return this.processHTTPMsgService.handleError(error); });
+        }
+        */
+    adduser(user) {
+        return this.http.post(__WEBPACK_IMPORTED_MODULE_2__shared_baseurl__["a" /* baseURL */] + 'user', user)
+            .catch(error => { return this.processHTTPMsgService.handleError(error); });
+    }
+};
+UserProvider = __decorate([
+    Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["A" /* Injectable */])(),
+    __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_0__angular_common_http__["a" /* HttpClient */], __WEBPACK_IMPORTED_MODULE_3__process_httpmsg_process_httpmsg__["a" /* ProcessHttpmsgProvider */]])
+], UserProvider);
+
+//# sourceMappingURL=user.js.map
+
+/***/ }),
+
+/***/ 297:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ProcessHttpmsgProvider; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__(166);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__(164);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw__ = __webpack_require__(504);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw__ = __webpack_require__(502);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw__);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -518,14 +744,14 @@ ProcessHttpmsgProvider = __decorate([
 
 /***/ }),
 
-/***/ 303:
+/***/ 301:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(304);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(430);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_take__ = __webpack_require__(521);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__ = __webpack_require__(302);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app_module__ = __webpack_require__(428);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_take__ = __webpack_require__(519);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_take___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_take__);
 
 
@@ -535,30 +761,30 @@ Object(__WEBPACK_IMPORTED_MODULE_0__angular_platform_browser_dynamic__["a" /* pl
 
 /***/ }),
 
-/***/ 430:
+/***/ 428:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(46);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ionic_angular__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__shared_baseurl__ = __webpack_require__(294);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_component__ = __webpack_require__(490);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_home_home__ = __webpack_require__(297);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__angular_common_http__ = __webpack_require__(166);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ionic_native_status_bar__ = __webpack_require__(162);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__ionic_native_splash_screen__ = __webpack_require__(164);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ionic_angular__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__shared_baseurl__ = __webpack_require__(292);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_component__ = __webpack_require__(488);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pages_home_home__ = __webpack_require__(295);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__angular_common_http__ = __webpack_require__(164);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ionic_native_status_bar__ = __webpack_require__(161);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__ionic_native_splash_screen__ = __webpack_require__(163);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__angular_forms__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ionic_storage__ = __webpack_require__(519);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__angular_fire___ = __webpack_require__(66);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__angular_fire_auth__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__angular_fire_database__ = __webpack_require__(90);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__angular_fire_firestore__ = __webpack_require__(167);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__angular_fire_storage__ = __webpack_require__(91);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__providers_user_user__ = __webpack_require__(165);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__providers_process_httpmsg_process_httpmsg__ = __webpack_require__(298);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__pages_profiledetail_profiledetail__ = __webpack_require__(97);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ionic_storage__ = __webpack_require__(517);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__angular_fire___ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__angular_fire_auth__ = __webpack_require__(135);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__angular_fire_database__ = __webpack_require__(137);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__angular_fire_firestore__ = __webpack_require__(298);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__angular_fire_storage__ = __webpack_require__(139);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__providers_user_user__ = __webpack_require__(296);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__providers_process_httpmsg_process_httpmsg__ = __webpack_require__(297);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__pages_profiledetail_profiledetail__ = __webpack_require__(168);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -641,16 +867,16 @@ AppModule = __decorate([
 
 /***/ }),
 
-/***/ 490:
+/***/ 488:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MyApp; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(162);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(164);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(297);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_ionic_angular__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ionic_native_status_bar__ = __webpack_require__(161);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__ionic_native_splash_screen__ = __webpack_require__(163);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pages_home_home__ = __webpack_require__(295);
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -698,233 +924,7 @@ MyApp = __decorate([
 
 //# sourceMappingURL=app.component.js.map
 
-/***/ }),
-
-/***/ 97:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ProfiledetailPage; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_fire_auth__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_fire_database__ = __webpack_require__(90);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_fire_storage__ = __webpack_require__(91);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_ionic_angular__ = __webpack_require__(37);
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-
-
-
-
-
-let ProfiledetailPage = class ProfiledetailPage {
-    constructor(afAuth, db, alertCtrl, storage, loadingCtrl, navCtrl, navParams) {
-        this.afAuth = afAuth;
-        this.db = db;
-        this.alertCtrl = alertCtrl;
-        this.storage = storage;
-        this.loadingCtrl = loadingCtrl;
-        this.navCtrl = navCtrl;
-        this.navParams = navParams;
-        this.downloadableURL = '';
-        this.basePath = '/photoAlbum';
-        this.updateDetail = false;
-        this.user = {};
-        this.user = this.navParams.get('data2');
-        this.userData = this.user;
-        if (this.user.photourl != "")
-            this.enableimgupdate = false;
-        else
-            this.enableimgupdate = true;
-    }
-    ionViewDidLoad() {
-        this.afAuth.authState.take(1).subscribe(data => {
-            if (data && data.email && data.uid) {
-                this.userId = data.uid;
-            }
-            else
-                alert("you are not authenticated");
-        }); //authstatesddd
-    }
-    removeFile() {
-        this.img1 = "";
-        this.selectedFile = "";
-        /*
-      \
-        }
-      
-      */
-    }
-    toggleUpdateDetails() {
-        this.updateDetail = !this.updateDetail;
-    }
-    chooseFile(event) {
-        if (event.target.files[0].size < 303110) {
-            if (event.target.files && event.target.files[0]) {
-                this.selectedFile = event.target.files[0];
-                let reader = new FileReader();
-                reader.onload = (event) => {
-                    this.img1 = event.target.result;
-                };
-                reader.readAsDataURL(event.target.files[0]);
-            }
-        }
-        else {
-            let alert = this.alertCtrl.create({
-                title: '<font color="green"><b> </b> The image should be less then 301KB </font>',
-                cssClass: "alert",
-                buttons: [
-                    {
-                        text: 'Ok',
-                        role: 'cancel',
-                        handler: data => {
-                            this.selectedFile = "";
-                        }
-                    },
-                ]
-            });
-            alert.present();
-            this.selectedFile = "";
-        } //end of else state,
-    }
-    updatephoto(photourl) {
-        var loading = this.loadingCtrl.create({
-            spinner: 'bubbles',
-            dismissOnPageChange: true,
-            content: 'removing image in progress <br> Please Wait...'
-        });
-        loading.present();
-        this.storage.storage.refFromURL(photourl).delete().then(async () => {
-            this.user.photourl = "";
-            this.db.object('photoalbum/users/' + this.userId).update(this.user)
-                .then(() => {
-                loading.dismiss();
-                this.enableimgupdate = true;
-                let alert = this.alertCtrl.create({
-                    title: '<font color="green"><b> </b>Profile Image Removed</font>',
-                    cssClass: "alert",
-                    buttons: [
-                        {
-                            text: 'Ok',
-                            role: 'cancel',
-                            handler: data => {
-                            }
-                        },
-                    ]
-                });
-                alert.present();
-            }); //end od update
-        }); //end of delete
-    }
-    error() {
-        let alert = this.alertCtrl.create({
-            title: '<font color="green"><b> </b> Full Name, State, Email, LGA, PhoneNo & Address are not optional</font>',
-            cssClass: "alert",
-            buttons: [
-                {
-                    text: 'Ok',
-                    role: 'cancel',
-                    handler: data => {
-                    }
-                },
-            ]
-        });
-        alert.present();
-    } //end of error
-    async update(user) {
-        var loading = this.loadingCtrl.create({
-            spinner: 'bubbles',
-            dismissOnPageChange: true,
-            content: 'Data updating in progress <br> Please Wait...'
-        });
-        loading.present();
-        if (this.selectedFile) {
-            const filePath = `${this.basePath}/${user.name.trim() + user.lga}`;
-            this.filepath2 = filePath; // inorder to get the path to delete file
-            this.task = this.storage.upload(filePath, this.selectedFile);
-            this.progressValue = this.task.percentageChanges(); // <<<<< Percentage of uploading is
-            (await this.task).ref.getDownloadURL().then(url => {
-                this.downloadableURL = url;
-                user.photourl = this.downloadableURL;
-                try {
-                    this.db.object('photoalbum/users/' + this.userId).update(user)
-                        .then(() => {
-                        let alert2 = this.alertCtrl.create({
-                            title: '<font color="green"><b> </b>Profile update Successful </font>',
-                            cssClass: "alert",
-                            buttons: [
-                                {
-                                    text: 'Ok',
-                                    role: 'cancel',
-                                    handler: data => {
-                                    }
-                                },
-                            ]
-                        });
-                        alert2.present();
-                        loading.dismiss();
-                    });
-                }
-                catch (error) {
-                    this.emailError = error.message;
-                    alert(error.message);
-                    console.error(error);
-                }
-            }); ///end of await  
-        }
-        else {
-            var loading = this.loadingCtrl.create({
-                spinner: 'bubbles',
-                dismissOnPageChange: true,
-                content: 'Data updating in progress <br> Please Wait...'
-            });
-            loading.present();
-            try {
-                //user.photourl = "";
-                this.db.object('photoalbum/users/' + this.userId).update(user)
-                    .then(() => {
-                    let alert2 = this.alertCtrl.create({
-                        title: '<font color="green"><b> </b>Profile update Successful </font>',
-                        cssClass: "alert",
-                        buttons: [
-                            {
-                                text: 'Ok',
-                                role: 'cancel',
-                                handler: data => {
-                                    //  this.afAuth.auth.signOut().then(()=>{})
-                                }
-                            },
-                        ]
-                    });
-                    alert2.present();
-                    loading.dismiss();
-                });
-            }
-            catch (error) {
-                this.emailError = error.message;
-                alert(error.message);
-                console.error(error);
-            }
-        } //end of if file selected methodd
-    } //end of update
-};
-ProfiledetailPage = __decorate([
-    Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-        selector: 'page-profiledetail',template:/*ion-inline-start:"C:\Users\Abdulqadir\Desktop\Ionic_Mobile_App_Builder_v18.12.10\ionic2\PHOTO_ALBUM - Copy\src\pages\profiledetail\profiledetail.html"*/'<!--\n  Generated temte for the Profiledet\n\n-->\n<ion-header>\n  <ion-navbar>\n    <p class="title">Member CMP Class Of 2021 @UDUS</p>\n\n  </ion-navbar>\n \n  \n</ion-header>\n\n<ion-content>\n\n  <ion-card *ngIf="user && !updateDetail" class="cont">\n    <img src="{{user.photourl}}" onContextMenu="return false;">\n    <ion-card-content>\n      <ion-grid>\n        <ion-row class="chat">\n          <ion-col col-4 class="social" *ngIf="user.whatsapp">\n            <a href=\'https://wa.me/+234{{user.whatsapp}}\'><ion-icon ios="logo-whatsapp" md="logo-whatsapp"></ion-icon></a>       \n           </ion-col>\n          <ion-col col-4 class="social" *ngIf="user.facebook">\n           <a href="https://facebook.com/{{user.facebook}}"><ion-icon ios="logo-facebook" md="logo-facebook"></ion-icon></a>\n          </ion-col>\n          <ion-col col-4 class="social" *ngIf="user.instagram">\n           <a href="https://Instagram.com/{{user.instagram}}"><ion-icon ios="logo-instagram" md="logo-instagram"></ion-icon></a>\n          </ion-col>\n        </ion-row>\n      </ion-grid>\n\n\n      <ion-grid>\n        <ion-row>\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Name: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.name}}</p>\n          </ion-col>\n        </ion-row>\n        \n        <ion-row *ngIf="user.nickname">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Nickname: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.nickname}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.state">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">State: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.state}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.lga">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">LGA: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.lga}}</p>\n          </ion-col>\n        </ion-row>\n      \n\n        <ion-row *ngIf="user.address">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Address: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.address}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.ambition">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Ambition: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.ambition}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.favoriteqoute">\n\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Favorite Quote: </font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.favoriteqoute}}</p>\n          </ion-col>\n        </ion-row>\n\n\n        <ion-row *ngIf="user.bestfriend">\n          <ion-col col-3 class="label">\n            <p><b><font color="primary">Best Friends:</font></b></p>\n           </ion-col>\n          <ion-col col-9 class="name">\n            <p>{{user.bestfriend}}</p>\n          </ion-col>\n        </ion-row>\n\n        <ion-row *ngIf="user.bestcourse">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Best Courses:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.bestcourse}}</p>\n        </ion-col>\n      </ion-row>\n      <ion-row *ngIf="user.worsecourse">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Worse Courses:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.worsecourse}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.favoritelecturer">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Favorite Lecturer:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.favoritelecturer}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.favoritefood">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Favorite Food:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.favoritefood}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.hobbies">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Hobbies:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.hobbies}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.email">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Email:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.email}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.instagram">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Instagram Handle:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.instagram}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.facebook">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Facebook:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.facebook}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.whatsapp">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Whatsapp No:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.whatsapp}}</p>\n        </ion-col>\n      </ion-row>\n\n      <ion-row *ngIf="user.phoneno">\n        <ion-col col-3 class="label">\n          <p><b><font color="primary">Phone:</font></b></p>\n         </ion-col>\n        <ion-col col-9 class="name">\n          <p>{{user.phoneno}}</p>\n        </ion-col>\n      </ion-row>\n\n\n\n\n\n      </ion-grid>\n\n        \n     \n     \n      \n    </ion-card-content>\n  </ion-card>\n  <button *ngIf="!updateDetail" ion-button icon-only (click)="toggleUpdateDetails()">\n    <ion-icon ios="ios-add-circle" md="md-add-circle" >Update profile</ion-icon>\n  </button>\n  <button *ngIf="updateDetail" ion-button icon-only (click)="toggleUpdateDetails()">\n    <ion-icon ios="ios-add-circle" md="md-add-circle" >Back to profile</ion-icon>\n  </button>\n\n<div class="update_cont" *ngIf="updateDetail"> \n\n\n<br>\n\n<ion-card *ngIf="user.photourl">\n  <img src="{{user.photourl}}" onContextMenu="return false;">\n  <ion-card-content>\n  </ion-card-content>\n  <button  class="button" ion-button  (click)="updatephoto(user.photourl)">Change Image</button>\n</ion-card>\n\n      <form  id="login-form"  color="primary" method="post">\n<!-- Phto -->\n        <ion-item class="input" *ngIf="enableimgupdate">\n    \n          <label  for="input" color="primary" style="font-size: 15pt; padding: 5px; color: blacks; text-transform: capitalize;">\n            <span id="p" ion-button outline round> Photo: </span>\n         </label>\n         <input id="input" type="file" accept="image/*" (change)="chooseFile($event)">   \n       \n          \n    </ion-item>\n       <div id="coverImage" *ngIf="img1">\n   <ion-card id="coverImage">\n\n    <p>image preview</p>\n     \n      <img *ngIf="img1" [src]="img1"  onerror="this.onerror=null;this.src=\'assets/noimage.jpg\';"  width="350px" height="400px"/>\n      <button  class="button" ion-button  (click)="removeFile()">Drop image</button>\n\n   \n  \n  \n <!-- Progress Bar\n\n\n\n-->\n\n<div *ngIf="progressValue | async as val">\n<progress type="warning"  [value]="val" style="height: 7mm; width: 50%" max="100" ></progress>\n<br />\n  <span *ngIf="val<100" style="color:rgb(255, 60, 0); font-size: 17px; font-weight: 410;">{{ val | number}}% </span><span *ngIf="val == 100" style="color:rgb(1, 153, 34);  font-size: 17px; font-weight: 410;">Completed !</span>\n</div>\n\n<!-- End -->\n  </ion-card>\n</div>\n\n<ion-grid class="ion-text-center">\n         <ion-row >\n                          <ion-col *ngIf = "user.name" col-lg-1 class="header-row">\n                            <ion-label >Full name</ion-label>\n                          </ion-col>\n                          <ion-col col-lg-11 *ngIf = "user.name">\n                            <ion-label >{{user.name}}</ion-label>\n                          </ion-col>\n         </ion-row>\n         <ion-row >\n                          <ion-col  *ngIf = "user.nickname" col-lg-1 class="header-row">\n                            <ion-label >Nick Name</ion-label>\n                          </ion-col>\n                          <ion-col col-lg-11 *ngIf = "user.nickname">\n                            <ion-label >{{user.nickname}}</ion-label>\n                          </ion-col>\n        </ion-row>\n              <ion-row >\n                <ion-col  *ngIf = "user.instagram" col-lg-1 class="header-row">\n                  <ion-label >Instagram Handle</ion-label>\n                </ion-col>\n                <ion-col col-lg-11 *ngIf = "user.instagram">\n                  <ion-label >{{user.instagram}}</ion-label>\n                </ion-col>\n              </ion-row>\n\n                  <ion-row >\n                    <ion-col  *ngIf = "user.facebook" col-lg-1 class="header-row">\n                      <ion-label >Facebook</ion-label>\n                    </ion-col>\n                    <ion-col col-lg-11 *ngIf = "user.facebook">\n                      <ion-label >{{user.facebook}}</ion-label>\n                    </ion-col>\n                  </ion-row>\n\n                  <ion-row >\n                    <ion-col  *ngIf = "user.whatsapp" col-lg-1 class="header-row">\n                      <ion-label >Whatsapp</ion-label>\n                    </ion-col>\n                    <ion-col col-lg-11 *ngIf = "user.whatsapp">\n                      <ion-label >{{user.whatsapp}}</ion-label>\n                    </ion-col>\n                  </ion-row>\n            <ion-row >\n\n                      <ion-col  *ngIf = "user.email" col-lg-1 class="header-row">\n                        <ion-label >Email</ion-label>\n                      </ion-col>\n                      <ion-col col-lg-11 *ngIf = "user.email">\n                        <ion-label >{{user.email}}</ion-label>\n                      </ion-col>\n        </ion-row>\n\n        <ion-row >\n                            <ion-col  *ngIf = "user.phone" col-lg-1 class="header-row">\n                              <ion-label >Phone No</ion-label>\n                            </ion-col>\n                            <ion-col col-lg-11 *ngIf = "user.phone">\n                              <ion-label >{{user.phone}}</ion-label>\n                             </ion-col>\n       </ion-row>\n       <ion-row >\n        <ion-col  *ngIf = "user.state" col-lg-1 class="header-row">\n                  <ion-label >State</ion-label>\n                </ion-col>\n                <ion-col col-lg-11 *ngIf = "user.state">\n                  <ion-label >{{user.state}}</ion-label>\n                </ion-col>\n      </ion-row>\n      <ion-row >\n                <ion-col  *ngIf = "user.lga" col-lg-1 class="header-row">\n                  <ion-label >LGA</ion-label>\n                </ion-col>\n                <ion-col col-lg-11 *ngIf = "user.lga">\n                  <ion-label >{{user.lga}}</ion-label>\n                </ion-col>\n      </ion-row>\n      <ion-row >\n                <ion-col  *ngIf = "user.address" col-lg-1 class="header-row">\n                  <ion-label >Address</ion-label>\n                </ion-col>\n                <ion-col col-lg-11 *ngIf = "user.address">\n                  <ion-label >{{user.address}}</ion-label>\n                </ion-col>\n     </ion-row>\n     <ion-row >\n            <ion-col  *ngIf = "user.ambition" col-lg-1 class="header-row">\n              <ion-label >Ambition</ion-label>\n            </ion-col>\n            <ion-col col-lg-11 *ngIf = "user.ambition">\n              <ion-label >{{user.ambition}}</ion-label>\n            </ion-col>\n    </ion-row>\n    <ion-row >\n          <ion-col  *ngIf = "user.bestcourse" col-lg-1 class="header-row">\n            <ion-label >Best Courses</ion-label>\n          </ion-col>\n          <ion-col col-lg-11 *ngIf = "user.bestcourse">\n            <ion-label >{{user.bestcourse}}</ion-label>\n          </ion-col>\n    </ion-row>\n    <ion-row >\n      <ion-col  *ngIf = "user.worsecourse" col-lg-1 class="header-row">\n        <ion-label >Worse Course</ion-label>\n      </ion-col>\n      <ion-col col-lg-11 *ngIf = "user.worsecourse">\n        <ion-label >{{user.worsecourse}}</ion-label>\n      </ion-col>\n    </ion-row>\n    <ion-row >\n      <ion-col  *ngIf = "user.hobbies" col-lg-1 class="header-row">\n        <ion-label >Worse Course</ion-label>\n      </ion-col>\n      <ion-col col-lg-11 *ngIf = "user.hobbies">\n        <ion-label >{{user.hobbies}}</ion-label>\n      </ion-col>\n    </ion-row>\n    <ion-row >\n      <ion-col  *ngIf = "user.bestfriend" col-lg-1 class="header-row">\n        <ion-label >Best Friends</ion-label>\n      </ion-col>\n      <ion-col col-lg-11 *ngIf = "user.bestfriend">\n        <ion-label >{{user.bestfriend}}</ion-label>\n      </ion-col>\n    </ion-row>\n    <ion-row >\n      <ion-col  *ngIf = "user.favoritelecturer" col-lg-1 class="header-row">\n        <ion-label >Favorite Lecturer</ion-label>\n      </ion-col>\n      <ion-col col-lg-11 *ngIf = "user.favoritelecturer">\n        <ion-label >{{user.favoritelecturer}}</ion-label>\n      </ion-col>\n    </ion-row>\n    <ion-row>\n    <ion-col  *ngIf = "user.favoritefood" col-lg-1 class="header-row">\n      <ion-label >Favorite Food</ion-label>\n    </ion-col>\n    <ion-col col-lg-11 *ngIf = "user.favoritefood">\n      <ion-label >{{user.favoritefood}}</ion-label>\n    </ion-col>\n  </ion-row>\n  <ion-row>\n    <ion-col  *ngIf = "user.favoriteqoute" col-lg-1 class="header-row">\n      <ion-label >Favorite qoute</ion-label>\n    </ion-col>\n    <ion-col col-lg-11 *ngIf = "user.favoriteqoute">\n      <ion-label >{{user.favoriteqoute}}</ion-label>\n    </ion-col>\n  </ion-row>\n\n\n\n\n\n\n\n</ion-grid>\n\n<ion-item class="input"> \n  <ion-label floating id="inputlabel">Full Name :</ion-label>     \n  <ion-input type="text" [(ngModel)]="user.name" name="name" required minlength="4" #name="ngModel" pattern="[A-Za-z ]+"> </ion-input>\n</ion-item>\n<div  *ngIf="name.invalid && (name.dirty || name.touched)" class="alert alert-danger">\n     <div *ngIf="name.errors.required" class="error">\n      Name is required.\n     </div>\n      \n       <div *ngIf="name.errors?.pattern" class="error">\n          Name should contain only alphabets\n       </div>\n     \n      <div *ngIf="name.errors.minlength" class="error">\n      Name must be at least 4 characters long.\n      </div>\n  </div>\n\n  <ion-item class="input"> \n    <ion-label floating id="inputlabel">Nick Name :</ion-label>     \n    <ion-input type="text" [(ngModel)]="user.nickname" name="nickname"  minlength="1" #nickname="ngModel" pattern="[A-Za-z 0-9.]+"> </ion-input>\n  </ion-item>\n  <div  *ngIf="nickname.invalid && (nickname.dirty || nickname.touched)" class="alert alert-danger">\n         <div *ngIf="nickname.errors?.pattern" class="error">\n            invalid characters\n         </div>\n       \n        <div *ngIf="nickname.errors?.minlength" class="error">\n        Name must be at least 1 characters long.\n        </div>\n  </div>\n  <ion-item class="input"> \n    <ion-label floating id="inputlabel">Instagram Handle :</ion-label>     \n    <ion-input type="text" [(ngModel)]="user.instagram"  name="instagram" minlength="4"  #instagram="ngModel" pattern="^[a-zA-Z0-9_.]+(,[a-zA-Z0-9_.]+)*$"> </ion-input>\n  </ion-item>\n  <div  *ngIf="instagram.invalid && (instagram.dirty || instagram.touched)" class="alert alert-danger">\n        <div *ngIf="instagram.errors?.pattern" class="error">\n          This is not  valid instagram  username\n      </div>\n        <div *ngIf="instagram.errors.minlength" class="error">\n        instagram must be at least 4 characters long.\n        </div>\n </div>\n\n <ion-item class="input"> \n  <ion-label floating id="inputlabel">Facebook Username :</ion-label>     \n  <ion-input type="text" [(ngModel)]="user.facebook"  name="facebook" minlength="4"  #facebook="ngModel"  pattern="^[a-zA-Z0-9_.]+(,[a-zA-Z0-9_.]+)*$"> </ion-input>\n</ion-item>\n<div  *ngIf="facebook.invalid && (facebook.dirty || facebook.touched)" class="alert alert-danger">\n      <div *ngIf="facebook.errors?.pattern" class="error">\n        This is not  valid facebook username\n    </div>\n      <div *ngIf="facebook.errors.minlength" class="error">\n        Facebook username will have to be at least four characters in length\n      </div>\n</div>\n\n<ion-item  class="inpt">\n          <ion-label floating id="inputlabel">Whatsapp No :</ion-label>\n          <ion-input type="tel" [(ngModel)]="user.whatsapp"  name="whatsapp"  minlength="11" #whatsapp="ngModel" pattern="^[0-9]*$"> </ion-input>\n        </ion-item>\n        <div  *ngIf="whatsapp.invalid && (whatsapp.dirty || whatsapp.touched)" class="alert alert-danger">\n          <div *ngIf="whatsapp.errors.pattern" class="error">Whatsapp should contain only Numbers and +</div>\n          \n            <div *ngIf="whatsapp.errors?.minlength" class="error">\n              Whatsapp must be at least 11 characters long.\n            </div>\n        </div>\n\n\n\n<ion-item  class="inpt">\n  <ion-label floating id="inputlabel">Phone No :</ion-label>\n  <ion-input type="tel" [(ngModel)]="user.phone"  name="phone"  minlength="11" #phone="ngModel" required pattern="^[0-9+]*$"> </ion-input>\n</ion-item>\n<div  *ngIf="phone.invalid && (phone.dirty || phone.touched)" class="alert alert-danger">\n  <div *ngIf="phone.errors.pattern" class="error">PhoneNo Number should contain only Numbers and +</div>\n</div>\n<div  *ngIf="phone.invalid && (phone.dirty || phone.touched)" class="alert alert-danger">\n  <div *ngIf="phone.errors?.required" class="error">\n    phone is required.\n    </div>\n    <div *ngIf="phone.errors?.minlength" class="error">\n      phone must be at least 11 characters long.\n    </div>\n</div>\n\n\n\n<ion-item class="input"> \n  <ion-label floating id="inputlabel">State :</ion-label>     \n  <ion-input type="text" [(ngModel)]="user.state"  name="state" required minlength="2"  #state="ngModel"  pattern="[A-Za-z]+"> </ion-input>\n</ion-item>\n<div  *ngIf="state.invalid && (state.dirty || state.touched)" class="alert alert-danger">\n      <div *ngIf="state.errors?.pattern" class="error">\n        State should contain only alphabets\n    </div>\n    <div *ngIf="state.errors.required" class="error">\n     State is required.\n      </div>\n      <div *ngIf="state.errors.minlength" class="error">\n      State must be at least 2 characters long.\n      </div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">LGA :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.lga"  name="lga" required minlength="2"  #lga="ngModel"  pattern="[A-Za-z ]+"> </ion-input>\n</ion-item>\n<div  *ngIf="lga.invalid && (lga.dirty || lga.touched)" class="alert alert-danger">\n    <div *ngIf="lga.errors?.pattern" class="error">\n    LGA should contain only alphabets\n  </div>\n  <div *ngIf="lga.errors.required" class="error">\n    LGA is required.\n    </div>\n    <div *ngIf="lga.errors.minlength" class="error">\n    LGA must be at least 2 characters long.\n    </div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Address :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.address"  name="address" required minlength="2"  #address="ngModel"> </ion-input>\n</ion-item>\n<div  *ngIf="address.invalid && (address.dirty || address.touched)" class="alert alert-danger">\n<div *ngIf="address.errors.required" class="error">\n  Address is required.\n  </div>\n  <div *ngIf="address.errors.minlength" class="error">\n  Address must be at least 2 characters long.\n  </div>\n</div>\n\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Ambition :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.ambition"  name="ambition"  minlength="2"  #ambition="ngModel"  pattern="[A-Za-z ]+"> </ion-input>\n</ion-item>\n<div  *ngIf="ambition.invalid && (ambition.dirty || ambition.touched)" class="alert alert-danger">\n<div *ngIf="ambition.errors?.pattern" class="error">\n  Ambition should contain only alphabets\n</div>\n\n<div *ngIf="ambition.errors.minlength" class="error">\nAmbition must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Best Courses :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.bestcourse"  name="bestcourse"  minlength="2"  #bestcourse="ngModel" pattern="^[a-zA-Z0-9, _ &]+(,[a-zA-Z0-9_, &]+)*$"> </ion-input>\n</ion-item>\n<div  *ngIf="bestcourse.invalid && (bestcourse.dirty || bestcourse.touched)" class="alert alert-danger">\n\n<div *ngIf="bestcourse.errors?.pattern" class="error">\nInvalid characters\n</div>\n<div *ngIf="bestcourse.errors.minlength" class="error">\nBest Course must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Worse Courses :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.worsecourse"  name="worsecourse"  minlength="2"  #worsecourse="ngModel" pattern="^[a-zA-Z0-9, _&]+(,[a-zA-Z0-9_, &]+)*$"> </ion-input>\n</ion-item>\n<div  *ngIf="worsecourse.invalid && (worsecourse.dirty || worsecourse.touched)" class="alert alert-danger">\n<div *ngIf="worsecourse.errors?.pattern" class="error">\nInvalid characters\n</div>\n<div *ngIf="worsecourse.errors.minlength" class="error">\nWorse Course must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Best Friends :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.bestfriend"  name="bestfriend"  minlength="2"  #bestfriend="ngModel"  pattern="[A-Za-z ,&]+"> </ion-input>\n</ion-item>\n<div  *ngIf="bestfriend.invalid && (bestfriend.dirty || bestfriend.touched)" class="alert alert-danger">\n\n<div *ngIf="bestfriend.errors?.pattern" class="error">\ninvalid characters\n</div>\n<div *ngIf="bestfriend.errors.minlength" class="error">\nBest Friends must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Favorite Lecturer :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.favoritelecturer"  name="favoritelecturer"  minlength="2"  #favoritelecturer="ngModel"  pattern="[A-Za-z .]+"> </ion-input>\n</ion-item>\n<div  *ngIf="favoritelecturer.invalid && (favoritelecturer.dirty || favoritelecturer.touched)" class="alert alert-danger">\n<div *ngIf="favoritelecturer.errors?.pattern" class="error">\nFavorite Lecturer should contain only alphabets\n</div>\n<div *ngIf="favoritelecturer.errors.minlength" class="error">\nFavorite Lecturer must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Favorite Food :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.favoritefood"  name="favoritefood"  minlength="2"  #favoritefood="ngModel"  pattern="[A-Za-z ]+"> </ion-input>\n</ion-item>\n<div  *ngIf="favoritefood.invalid && (favoritefood.dirty || favoritefood.touched)" class="alert alert-danger">\n<div *ngIf="favoritefood.errors?.pattern" class="error">\nFavorite Food should contain only alphabets\n</div>\n<div *ngIf="favoritefood.errors.minlength" class="error">\nFavorite Food must be at least 2 characters long.\n</div>\n</div>\n<ion-item class="input"> \n<ion-label floating id="inputlabel">Favorite Quote :</ion-label>     \n<ion-input type="text" [(ngModel)]="user.favoriteqoute"  name="favoriteqoute"  minlength="2"  #favoriteqoute="ngModel"  pattern="[A-Za-z 0-9 , ; \'\' ?.]+"> </ion-input>\n</ion-item>\n<div  *ngIf="favoriteqoute.invalid && (favoriteqoute.dirty || favoriteqoute.touched)" class="alert alert-danger">\n<div *ngIf="favoriteqoute.errors?.pattern" class="error">\ninvalid characters\n</div>\n<div *ngIf="favoriteqoute.errors.minlength" class="error">\nFavorite Quote must be at least 2 characters long.\n</div>\n</div>\n\n<ion-item class="input"> \n  <ion-label floating id="inputlabel">Hobbies :</ion-label>     \n  <ion-input type="text" [(ngModel)]="user.hobbies"  name="hobbies"  minlength="2"  #worsecourse="ngModel" pattern="^[a-zA-Z0-9, _&]+(,[a-zA-Z0-9_, &]+)*$"> </ion-input>\n  </ion-item>\n  <div  *ngIf="worsecourse.hobbies && (hobbies.dirty || hobbies.touched)" class="alert alert-danger">\n  <div *ngIf="hobbies.errors?.pattern" class="error">\n  Invalid characters\n  </div>\n  <div *ngIf="hobbies.errors.minlength" class="error">\n  Hobbies must be at least 2 characters long.\n  </div>\n  </div>\n\n\n\n\n  \n     <div id="login-buttons">\n  \n      <button round  id="login-button" color="primary" ion-button *ngIf="name.invalid || state.invalid || lga.invalid || address.invalid || phone.invalid" id="invalid"  (click)="error()" end>Update</button>\n      <button round  id="login-button"  color="primary" ion-button *ngIf="name.valid && state.valid && lga.valid && address.valid && phone.valid" (click)="update(user)">Update</button>\n   \n    </div>\n  \n     \n    </form>\n  \n\n\n</div>\n\n\n</ion-content>\n'/*ion-inline-end:"C:\Users\Abdulqadir\Desktop\Ionic_Mobile_App_Builder_v18.12.10\ionic2\PHOTO_ALBUM - Copy\src\pages\profiledetail\profiledetail.html"*/,
-    }),
-    __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_fire_auth__["a" /* AngularFireAuth */], __WEBPACK_IMPORTED_MODULE_2__angular_fire_database__["a" /* AngularFireDatabase */], __WEBPACK_IMPORTED_MODULE_4_ionic_angular__["a" /* AlertController */], __WEBPACK_IMPORTED_MODULE_3__angular_fire_storage__["a" /* AngularFireStorage */], __WEBPACK_IMPORTED_MODULE_4_ionic_angular__["f" /* LoadingController */], __WEBPACK_IMPORTED_MODULE_4_ionic_angular__["h" /* NavController */], __WEBPACK_IMPORTED_MODULE_4_ionic_angular__["i" /* NavParams */]])
-], ProfiledetailPage);
-
-//# sourceMappingURL=profiledetail.js.map
-
 /***/ })
 
-},[303]);
+},[301]);
 //# sourceMappingURL=main.js.map

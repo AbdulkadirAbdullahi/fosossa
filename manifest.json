@@ -1,6 +1,6 @@
 {
-  "name": "UDUS",
-  "short_name": "UDUS",
+  "name": "Ionic",
+  "short_name": "Ionic",
   "start_url": "index.html",
   "display": "standalone",
   "icons": [{
